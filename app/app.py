@@ -11,16 +11,14 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     env = os.environ.get("ENVIRONMENT", "unknown")
-    return jsonify({"message": "10Alytics DevOps API", "environment": env})
+    return jsonify({
+        "message": "10Alytics DevOps Assessment API",
+        "environment": env
+    })
 
 
 @app.route("/health")
 def health():
-    """
-    Health endpoint for Azure App Service health checks and pipeline verification.
-    Returns 200 if the app is running and DB config is present.
-    Returns 503 if a critical dependency is misconfigured.
-    """
     checks = {}
     status_code = 200
 

@@ -14,8 +14,8 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = var.azure_subscription_id
-  tenant_id       = var.azure_tenant_id
+  subscription_id = "3088b175-92ef-4dd7-9020-ee7ae696fd1a"
+  tenant_id       = "5fe78ac1-1afe-4009-aa04-a71efb4a5042"
 }
 
 resource "random_string" "rand" {
@@ -33,7 +33,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 #--------------------------
-# App Service Plan (B1 - within student limits)
+# App Service Plan
 #--------------------------
 resource "azurerm_service_plan" "app_plan" {
   name                = "asp-10alytics-dev"
@@ -54,7 +54,7 @@ resource "azurerm_linux_web_app" "app" {
   https_only          = true
 
   site_config {
-    always_on = false  # Must be false on B1 SKU
+    always_on = false
     application_stack {
       python_version = "3.11"
     }
@@ -63,7 +63,7 @@ resource "azurerm_linux_web_app" "app" {
 
   app_settings = {
     "WEBSITE_RUN_FROM_PACKAGE" = "1"
-    "ENVIRONMENT"              = var.environment
+    "ENVIRONMENT"              = "dev"
     "DB_CONNECTION_STRING"     = "Server=tcp:${azurerm_mssql_server.sql.fully_qualified_domain_name},1433;Database=appdb-dev;User ID=${var.db_admin};Password=${var.db_password};Encrypt=true;TrustServerCertificate=false;"
   }
 }
@@ -81,7 +81,7 @@ resource "azurerm_mssql_server" "sql" {
 }
 
 #--------------------------
-# SQL Database (Basic - cheapest tier)
+# SQL Database
 #--------------------------
 resource "azurerm_mssql_database" "db" {
   name      = "appdb-dev"
@@ -90,7 +90,7 @@ resource "azurerm_mssql_database" "db" {
 }
 
 #--------------------------
-# Firewall: allow Azure services only
+# Firewall: Azure services only
 #--------------------------
 resource "azurerm_mssql_firewall_rule" "azure_services" {
   name             = "AllowAzureServices"
