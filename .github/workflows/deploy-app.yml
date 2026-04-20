@@ -115,3 +115,46 @@ jobs:
           done
           echo "Health check failed after 10 attempts"
           exit 1
+
+  destroy-on-failure:
+    name: Destroy infrastructure on failure
+    runs-on: ubuntu-latest
+    needs: [provision, deploy]
+    # Only runs if provision or deploy failed — never on success
+    if: failure()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure CLI login
+        run: |
+          az login \
+            --username "${{ secrets.AZURE_USERNAME }}" \
+            --password "${{ secrets.AZURE_PASSWORD }}"
+          az account set \
+            --subscription "3088b175-92ef-4dd7-9020-ee7ae696fd1a"
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.x"
+
+      - name: Terraform init
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+        run: terraform init
+        working-directory: terraform/
+
+      - name: Terraform destroy
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+        run: |
+          echo "Pipeline failed — destroying provisioned infrastructure to avoid cost..."
+          terraform destroy -auto-approve \
+            -var="db_admin=${{ secrets.DB_ADMIN }}" \
+            -var="db_password=${{ secrets.DB_PASSWORD }}"
+        working-directory: terraform/
+
+      - name: Notify destroy complete
+        run: |
+          echo "Infrastructure destroyed successfully."
+          echo "No billable resources remain from this failed run."
