@@ -22,19 +22,26 @@ Developer Push → GitHub → GitHub Actions (CI)
 
 ## Repository Structure
 10alytics-devops-assessment/
+│
 ├── .github/workflows/
-│   ├── terraform-plan.yml   # Runs on PRs — validates infra changes
-│   └── deploy-app.yml       # Runs on main push — full deploy
+│   ├── terraform-plan.yml
+│   └── deploy-app.yml
+│
 ├── terraform/
-│   ├── main.tf              # Core infrastructure
-│   ├── variables.tf         # Input variables
-│   ├── backend.tf           # Remote state configuration
-│   └── outputs.tf           # App URL and name exports
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── backend.tf
+│   └── outputs.tf
+│
 ├── app/
-│   ├── app.py               # Flask application
-│   ├── requirements.txt     # Python dependencies
+│   ├── __init__.py          ← new (empty)
+│   ├── app.py
+│   ├── requirements.txt
 │   └── tests/
-│       └── test_app.py      # Pytest test suite
+│       ├── __init__.py      ← new (empty)
+│       └── test_app.py
+│
+├── pytest.ini               ← new
 └── README.md
 
 ## Required GitHub Secrets

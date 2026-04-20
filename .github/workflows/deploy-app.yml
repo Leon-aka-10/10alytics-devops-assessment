@@ -29,7 +29,10 @@ jobs:
       - name: Run tests
         run: |
           pip install pytest-cov
-          pytest app/tests/ --cov=app --cov-report=term-missing
+          pytest app/tests/ \
+            --cov=app \
+            --cov-report=term-missing \
+            --import-mode=importlib
 
   provision:
     name: Provision infrastructure
