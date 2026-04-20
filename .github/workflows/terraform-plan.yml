@@ -1,0 +1,69 @@
+name: Terraform Plan (PR Validation)
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  terraform-plan:
+    name: Plan infrastructure changes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure CLI login
+        run: |
+          az login \
+            --username "${{ secrets.AZURE_USERNAME }}" \
+            --password "${{ secrets.AZURE_PASSWORD }}"
+          az account set \
+            --subscription "3088b175-92ef-4dd7-9020-ee7ae696fd1a"
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.x"
+
+      - name: Terraform init
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+        run: terraform init
+        working-directory: terraform/
+
+      - name: Terraform validate
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+        run: terraform validate
+        working-directory: terraform/
+
+      - name: Terraform plan
+        id: plan
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+        run: |
+          terraform plan -no-color \
+            -var="db_admin=${{ secrets.DB_ADMIN }}" \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            -out=tfplan 2>&1 | tee plan_output.txt
+        working-directory: terraform/
+
+      - name: Post plan to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform/plan_output.txt', 'utf8');
+            const truncated = plan.length > 60000
+              ? plan.slice(0, 60000) + '\n...(truncated)'
+              : plan;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### Terraform Plan\n\`\`\`\n${truncated}\n\`\`\``
+            });
