@@ -1,5 +1,14 @@
+#--------------------------
+# General Variables
+#--------------------------
+variable "location" {
+  description = "Azure region. Student account restricted to francecentral."
+  type        = string
+  default     = "francecentral"
+}
+
 variable "environment" {
-  description = "Deployment environment: dev or prod"
+  description = "Deployment environment"
   type        = string
   default     = "dev"
   validation {
@@ -8,25 +17,47 @@ variable "environment" {
   }
 }
 
-variable "location" {
-  description = "Azure region"
+#--------------------------
+# Resource Group
+#--------------------------
+variable "rg_name" {
+  description = "Name of the Resource Group"
   type        = string
-  default     = "eastus"
+  default     = "rg-10alytics-dev"
 }
 
+#--------------------------
+# App Service
+#--------------------------
+variable "app_service_sku" {
+  description = "SKU for App Service Plan. B1 is within student quota."
+  type        = string
+  default     = "B1"
+}
+
+#--------------------------
+# Database
+#--------------------------
 variable "db_admin" {
-  description = "SQL Server admin username"
+  description = "SQL Server administrator username"
   type        = string
 }
 
 variable "db_password" {
-  description = "SQL Server admin password"
+  description = "SQL Server administrator password"
   type        = string
   sensitive   = true
 }
 
-variable "aad_admin_object_id" {
-  description = "Azure AD object ID for SQL AAD admin"
+#--------------------------
+# Azure Authentication
+#--------------------------
+variable "azure_subscription_id" {
+  description = "Azure subscription ID"
   type        = string
-  sensitive   = true
+}
+
+variable "azure_tenant_id" {
+  description = "Azure tenant ID"
+  type        = string
 }
